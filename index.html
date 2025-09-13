@@ -63,7 +63,7 @@
       const responseBox = document.getElementById('response');
 
       try {
-        const res = await fetch('https://mailer.renexgen.com/public/send', {
+        const res = await fetch('https://mailer.renexgen.com/public/api/send', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({ api_key, from_name, from_email, message })
