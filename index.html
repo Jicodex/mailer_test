@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contact Us</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f6fa;
+      padding: 30px;
+      display: flex;
+      justify-content: center;
+    }
+    .form-container {
+      background: #fff;
+      border-radius: 8px;
+      padding: 25px 30px;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    }
+    h1 {
+      margin-top: 0;
+      font-size: 22px;
+      text-align: center;
+      color: #333;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-size: 14px;
+      color: #555;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+    button {
+      background: #3366cc;
+      color: #fff;
+      border: none;
+      padding: 12px 18px;
+      margin-top: 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 15px;
+      width: 100%;
+    }
+    button:disabled {
+      background: #999;
+      cursor: not-allowed;
+    }
+    .status {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 14px;
+      display: none;
+    }
+    .status.success {
+      background: #eaf9f1;
+      color: #137a41;
+      display: block;
+    }
+    .status.error {
+      background: #fdeaea;
+      color: #b32525;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="form-container">
+    <h1>Contact Us</h1>
+
+    <form id="contactForm">
+      <input type="hidden" id="api_key" value="WWVePIppuEORwhAqzF76LUFn7yQSyiBBtXDyTOwyThyn4jwiqqTb8Wa2bLOkDoFB">
+
+      <label>Your Name</label>
+      <input type="text" id="from_name" required>
+
+      <label>Your Email</label>
+      <input type="email" id="from_email" required>
+
+      <label>Your Message</label>
+      <textarea id="message" required></textarea>
+
+      <button type="submit" id="sendBtn">Send Message</button>
+      <div class="status" id="status"></div>
+    </form>
+  </div>
+
+<script>
+const API_URL = "https://mailer.renexgen.com/public/send"; // তোমার Laravel API endpoint
+
+const form = document.getElementById('contactForm');
+const statusBox = document.getElementById('status');
+const sendBtn = document.getElementById('sendBtn');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  statusBox.style.display = 'none';
+  sendBtn.disabled = true;
+
+  const payload = {
+    api_key: document.getElementById('api_key').value,
+    from_name: document.getElementById('from_name').value.trim(),
+    from_email: document.getElementById('from_email').value.trim(),
+    message: document.getElementById('message').value.trim()
+  };
+
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    if(res.ok){
+      showStatus('Message sent successfully!', 'success');
+      form.reset();
+    }else{
+      showStatus(data.message || 'Failed to send message', 'error');
+    }
+  } catch (err) {
+    showStatus('Network error, please try again.', 'error');
+  } finally {
+    sendBtn.disabled = false;
+  }
+});
+
+function showStatus(msg, type){
+  statusBox.textContent = msg;
+  statusBox.className = `status ${type}`;
+  statusBox.style.display = 'block';
+}
+</script>
+
+</body>
+</html>
