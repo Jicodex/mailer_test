@@ -1,152 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Contact Us</title>
+  <meta charset="UTF-8">
+  <title>Send Message</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f5f6fa;
-      padding: 30px;
+      background: #f4f4f4;
       display: flex;
       justify-content: center;
+      align-items: center;
+      height: 100vh;
     }
-    .form-container {
+    form {
       background: #fff;
-      border-radius: 8px;
-      padding: 25px 30px;
-      max-width: 500px;
+      padding: 25px;
+      border-radius: 10px;
+      width: 300px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, textarea, button {
       width: 100%;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-    }
-    h1 {
-      margin-top: 0;
-      font-size: 22px;
-      text-align: center;
-      color: #333;
-    }
-    label {
-      display: block;
-      margin-top: 15px;
-      font-size: 14px;
-      color: #555;
-    }
-    input, textarea {
-      width: 100%;
-      padding: 10px 12px;
-      margin-top: 5px;
+      margin-bottom: 15px;
+      padding: 10px;
       border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 14px;
-      box-sizing: border-box;
-    }
-    textarea {
-      resize: vertical;
-      min-height: 100px;
+      border-radius: 5px;
     }
     button {
       background: #3366cc;
       color: #fff;
       border: none;
-      padding: 12px 18px;
-      margin-top: 20px;
-      border-radius: 6px;
       cursor: pointer;
-      font-size: 15px;
-      width: 100%;
     }
-    button:disabled {
-      background: #999;
-      cursor: not-allowed;
-    }
-    .status {
-      margin-top: 15px;
-      padding: 10px;
-      border-radius: 6px;
-      font-size: 14px;
-      display: none;
-    }
-    .status.success {
-      background: #eaf9f1;
-      color: #137a41;
-      display: block;
-    }
-    .status.error {
-      background: #fdeaea;
-      color: #b32525;
-      display: block;
+    button:hover {
+      background: #254d99;
     }
   </style>
 </head>
 <body>
 
-  <div class="form-container">
-    <h1>Contact Us</h1>
+  <form id="mailForm">
+    <h3>Send a Message</h3>
+    <input type="hidden" id="api_key" value="WWVePIppuEORwhAqzF76LUFn7yQSyiBBtXDyTOwyThyn4jwiqqTb8Wa2bLOkDoFB">
 
-    <form id="contactForm">
-      <input type="hidden" id="api_key" value="WWVePIppuEORwhAqzF76LUFn7yQSyiBBtXDyTOwyThyn4jwiqqTb8Wa2bLOkDoFB">
+    <input type="text" id="from_name" placeholder="Your Name" required>
+    <input type="email" id="from_email" placeholder="Your Email" required>
+    <textarea id="message" placeholder="Write your message..." required></textarea>
+    <button type="submit">Send</button>
 
-      <label>Your Name</label>
-      <input type="text" id="from_name" required>
+    <p id="response" style="color: green; text-align:center;"></p>
+  </form>
 
-      <label>Your Email</label>
-      <input type="email" id="from_email" required>
+  <script>
+    document.getElementById('mailForm').addEventListener('submit', async function(e){
+      e.preventDefault();
 
-      <label>Your Message</label>
-      <textarea id="message" required></textarea>
+      const api_key = document.getElementById('api_key').value;
+      const from_name = document.getElementById('from_name').value;
+      const from_email = document.getElementById('from_email').value;
+      const message = document.getElementById('message').value;
 
-      <button type="submit" id="sendBtn">Send Message</button>
-      <div class="status" id="status"></div>
-    </form>
-  </div>
+      const responseBox = document.getElementById('response');
 
-<script>
-const API_URL = "https://mailer.renexgen.com/public/send"; // তোমার Laravel API endpoint
-
-const form = document.getElementById('contactForm');
-const statusBox = document.getElementById('status');
-const sendBtn = document.getElementById('sendBtn');
-
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  statusBox.style.display = 'none';
-  sendBtn.disabled = true;
-
-  const payload = {
-    api_key: document.getElementById('api_key').value,
-    from_name: document.getElementById('from_name').value.trim(),
-    from_email: document.getElementById('from_email').value.trim(),
-    message: document.getElementById('message').value.trim()
-  };
-
-  try {
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(payload)
+      try {
+        const res = await fetch('https://mailer.renexgen.com/public/send', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ api_key, from_name, from_email, message })
+        });
+        const data = await res.json();
+        if(data.status === 'success'){
+          responseBox.style.color = 'green';
+          responseBox.textContent = 'Message sent successfully!';
+        } else {
+          responseBox.style.color = 'red';
+          responseBox.textContent = data.message || 'Something went wrong!';
+        }
+      } catch (err) {
+        responseBox.style.color = 'red';
+        responseBox.textContent = 'Network error. Try again.';
+      }
     });
-
-    const data = await res.json();
-    if(res.ok){
-      showStatus('Message sent successfully!', 'success');
-      form.reset();
-    }else{
-      showStatus(data.message || 'Failed to send message', 'error');
-    }
-  } catch (err) {
-    showStatus('Network error, please try again.', 'error');
-  } finally {
-    sendBtn.disabled = false;
-  }
-});
-
-function showStatus(msg, type){
-  statusBox.textContent = msg;
-  statusBox.className = `status ${type}`;
-  statusBox.style.display = 'block';
-}
-</script>
+  </script>
 
 </body>
 </html>
